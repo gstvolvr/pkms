@@ -1,5 +1,7 @@
+import collections
+import logging
+
 import frontmatter
-from sitecustomize import long_prefix
 
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
@@ -68,13 +70,32 @@ def get_md_path_key(md_path: str) -> str:
     name = md_path.split('/')[-1]
     return name.replace('%20', ' ').replace('.md', '').replace(')', '')
 
-
 def get_yaml_path_key(yaml_path: str) -> str:
     name = yaml_path.split('/')[-1]
     return name.split('|')[0].replace('.md', '')
 
 
-def enrich_meta(path: str) -> None:
+def enrich_meta_with_locations(path: str, cities: list) -> None:
+    """Add a list of cities to the metadata under the 'locations' attribute."""
+    with open(path, 'r') as f:
+        post = frontmatter.load(f)
+
+    if 'locations' not in post or post['locations'] is None:
+        post['locations'] = []
+    else:
+        return
+
+
+    # Add new cities to the metadata
+    print(cities)
+    post['locations'] = list(set(post['locations'] + cities))
+
+    # Update the markdown file with the new metadata
+    print(post)
+    print(post.metadata)
+    frontmatter.dump(post, path)
+
+def enrich_meta_with_people(path: str, photo_metadata: dict = None) -> None:
     """Capture links from the text and add them to the metadata"""
 
     post_file = fm.read_file(path)
@@ -128,15 +149,30 @@ def read_photo_metadata(path: str):
 
 
 if __name__ == '__main__':
-    existing_files = glob.glob(f'{util.PENSIEVE_PATH}/*/*/*')
-    fm = frontmatter.Frontmatter()
+    existing_files = glob.glob(f'{util.PENSIEVE_PATH}/2023/*/*.md')
+    photo_files = glob.glob(f'{util.PENSIEVE_PATH}/2025/01/30/*.json')
     for i, path in enumerate(existing_files):
-        #init_meta(path)
-        enrich_meta(path)
+        print(path)
+        year, month, date_file_name = path.split('/')[7:]
+        day = date_file_name.split('.')[0][-2:]
+        photo_metadata_paths = glob.glob(f'{util.PHOTOS_PATH}/{year}/{month}/{day}/*.json')
+        with open(path, 'r') as f:
+            fmt = frontmatter.load(f)
+        if fmt.get('location') is not None:
+            logging.info(f'Already have a location for: {path}')
 
-    latitude = 42.32586333333333
-    longitude = -71.1492695
-
-    city, state = get_city_state(latitude, longitude)
-    if city and state:
-        print(f"The location is in {city}, {state}.")
+        # keep track of the most common cities.
+        # since I get photos from other people in my library I only want to keep track of the most common cases
+        cities = collections.defaultdict(int)
+        for photo_path in photo_metadata_paths:
+            photo_metadata = read_photo_metadata(photo_path)
+            if 'latitude' in photo_metadata and 'longitude' in photo_metadata:
+                lat, lon = photo_metadata['latitude'], photo_metadata['longitude']
+                if lat is not None and lat is not None:
+                    city, state = get_city_state(lat, lon)
+                    cities[city] += 1
+        if cities:
+            most_common_city = max(cities, key=cities.get)
+            print(cities)
+            print(most_common_city)
+            enrich_meta_with_locations(path, [f'{[[most_common_city]]}'.replace("'", '')])
