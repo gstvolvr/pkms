@@ -105,7 +105,7 @@ def generate_wikipedia_url(token: str) -> Optional[str]:
 
 
 if __name__ == '__main__':
-    #pensieve()
-    summaries()
+    pensieve()
+    # summaries()
     #concepts()
 

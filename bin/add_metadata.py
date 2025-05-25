@@ -236,11 +236,9 @@ def create_notes_based_on_photos():
             if lat is not None and lon is not None:
                 # Parse the date information from the photo path
                 year, month, day = photo_path.split('/')[-4:-1]
-                # the year I started keeping track of this
-                if int(year) < 2018:
+                if int(year) < 1992:
                     continue
                 day = day.split('.')[0]  # Remove file extension
-                # print(lat, lon)
 
                 # Construct the file path under PENSIEVE_PATH
                 note_path = f"{util.PENSIEVE_PATH}/{year}/{month}/{year[2:]}{month}{day}.md"
@@ -259,6 +257,7 @@ def create_notes_based_on_photos():
 
 
 if __name__ == '__main__':
-    load_photo_metadata_into_md_frontmatter()
-    # propagate_location_metadata()
+    # watch out for the use of templates
     # create_notes_based_on_photos()
+    load_photo_metadata_into_md_frontmatter()
+    propagate_location_metadata()
