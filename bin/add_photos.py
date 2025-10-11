@@ -50,7 +50,7 @@ def main():
         grid = markdown_grid([photo_path for j, photo_path in enumerate(paths) if j < 4])
         with open(path, 'r') as r:
             if '<p align' in r.read():
-               print(f'skipping: {path}')
+               # print(f'skipping: {path}')
                continue
 
         with open(path, 'a') as w:
