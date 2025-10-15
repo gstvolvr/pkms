@@ -1,3 +1,7 @@
 python-frontmatter
 osxphotos
 geopy
+requests
+numpy
+tqdm
+PyYAML

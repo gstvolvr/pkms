@@ -1,5 +1,4 @@
 import collections
-import datetime
 import os
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
@@ -326,33 +325,6 @@ def load_photo_metadata_into_md_frontmatter():
         if changed:
             util.write_frontmatter_and_body(path, fm, body)
 
-def create_missing_notes():
-    existing_files = glob.glob(f'{util.PENSIEVE_PATH}/*/*/*.md')
-    existing_files = [path.split('/')[-1].replace('.md', '') for path in existing_files]
-    current_date = datetime.date(1992, 9, 8)
-    end_date = datetime.date.today()
-    print(existing_files[:10])
-    print(len(existing_files))
-
-    while current_date <= end_date:
-        current_date_str = current_date.strftime('%y%m%d')
-        year = current_date.year
-        month = current_date_str[2:4]
-        # print(current_date, current_date_str)
-        note_path = f"{util.PENSIEVE_PATH}/{year}/{month}/{current_date_str}.md"
-        if current_date_str not in existing_files:
-            print(f'creating {note_path}')
-            os.makedirs(os.path.dirname(note_path), exist_ok=True)
-
-            # Write an empty markdown file if it doesn't already exist
-            if not os.path.exists(note_path):
-                print(f"Created note file: {note_path}")
-                with open(note_path, 'w') as note_file:
-                    time.sleep(0.01)
-                    continue
-
-        current_date = datetime.timedelta(days=1) + current_date
-
 def create_notes_based_on_photos():
     """
     If we have metadata from photos then we should create daily notes even if we don't currently have any written content in them
@@ -381,6 +353,7 @@ def create_notes_based_on_photos():
             # Ensure the directory exists before creating the file
             os.makedirs(os.path.dirname(note_path), exist_ok=True)
 
+            # print(note_path)
             # Write an empty markdown file if it doesn't already exist
             if not os.path.exists(note_path):
                 print(f"Created note file: {note_path}")
@@ -787,8 +760,7 @@ def auto_add_people_from_photos(approved_names_source: str = 'auto_approved_peop
 
 if __name__ == '__main__':
     # auto_add_people_from_photos()
-    # prompt_add_people_from_photos()
-    create_missing_notes()
+    prompt_add_people_from_photos()
     # watch out for the use of templates
     # create_notes_based_on_photos()
     # load_photo_metadata_into_md_frontmatter()
