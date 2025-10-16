@@ -155,6 +155,13 @@ def standardize_people_and_title(path: str, alias_map=None, file_to_display=None
     if fm is None:
         fm = {}
 
+    # Date synchronization
+    date_from_path = util.get_date_from_path(path)
+    date_from_fm = fm.get('date')
+    changed_date = False
+    if date_from_path and str(date_from_path) != str(date_from_fm):
+        changed_date = True
+
     # Normalize people
     people = fm.get('people')
     if people is None:
@@ -221,7 +228,7 @@ def standardize_people_and_title(path: str, alias_map=None, file_to_display=None
     # Determine changes
     changed_people = (standardized_links != people_list)
     changed_locations = (sorted_locations != locations_list)
-    changed = changed_people or changed_locations or body_changed
+    changed = changed_people or changed_locations or body_changed or changed_date
 
     log = {
         'people_before': people_list,
@@ -230,9 +237,13 @@ def standardize_people_and_title(path: str, alias_map=None, file_to_display=None
         'locations_after': sorted_locations,
         'title_before': old_title,
         'title_after': desired_title if body_changed else old_title,
+        'date_before': str(date_from_fm) if date_from_fm else None,
+        'date_after': str(date_from_path) if date_from_path else None,
     }
 
     if changed and not dry_run:
+        if changed_date:
+            fm['date'] = date_from_path
         fm['people'] = standardized_links if standardized_links else None
         fm['locations'] = sorted_locations if sorted_locations else None
         util.write_frontmatter_and_body(path, fm, new_body)
@@ -245,7 +256,6 @@ def standardize_people_and_title(path: str, alias_map=None, file_to_display=None
 # ------------------------------------------------------------
 
 PROCESSED_FILE = 'processed_review_metadata.json'
-
 
 essentially_space = ' '
 
@@ -260,9 +270,12 @@ def run_auto() -> None:
         if changed:
             updated += 1
             print(f"Updated: {path}")
-            print(f"  people: {log['people_before']} -> {log['people_after']}")
+            if log.get('people_before') != log.get('people_after'):
+                print(f"  people: {log['people_before']} -> {log['people_after']}")
             if log.get('locations_before') != log.get('locations_after'):
                 print(f"  locations: {log.get('locations_before')} -> {log.get('locations_after')}")
+            if log.get('date_before') != log.get('date_after'):
+                print(f"  date: {log.get('date_before')} -> {log.get('date_after')}")
             if log['title_before'] != log['title_after']:
                 print(f"  title: {log['title_before']} -> {log['title_after']}")
     print(f"Scanned {scanned} files. Updated {updated}.")
@@ -286,11 +299,15 @@ def _save_processed(s: set) -> None:
 
 def _preview_changes(path: str, log: Dict[str, object]) -> None:
     print(f"\nFile: {path}")
-    print(f"People before: {log['people_before']}")
-    print(f"People after:  {log['people_after']}")
+    if log.get('people_before') != log.get('people_after'):
+        print(f"People before: {log['people_before']}")
+        print(f"People after:  {log['people_after']}")
     if log.get('locations_before') != log.get('locations_after'):
         print(f"Locations before: {log.get('locations_before')}")
         print(f"Locations after:  {log.get('locations_after')}")
+    if log.get('date_before') != log.get('date_after'):
+        print(f"Date before: {log.get('date_before')}")
+        print(f"Date after:  {log.get('date_after')}")
     if log['title_before'] != log['title_after']:
         print(f"Title before: {log['title_before']}")
         print(f"Title after:  {log['title_after']}")
@@ -308,6 +325,14 @@ def _count_remaining_interactive() -> int:
         fm, body = util.load_frontmatter_and_body(path)
         if fm is None:
             fm = {}
+
+        # Date check
+        date_from_path = util.get_date_from_path(path)
+        date_from_fm = fm.get('date')
+        will_change_date = False
+        if date_from_path and str(date_from_path) != str(date_from_fm):
+            will_change_date = True
+
         # People
         before_people = fm.get('people')
         if isinstance(before_people, str):
@@ -353,7 +378,7 @@ def _count_remaining_interactive() -> int:
         # Locations need change if sorted order differs
         will_change_locations = (sorted(locations_list) != locations_list)
 
-        if body_changed or will_change_people or will_change_locations:
+        if body_changed or will_change_people or will_change_locations or will_change_date:
             remaining += 1
     return remaining
 
