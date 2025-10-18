@@ -7,6 +7,7 @@ from pkms.core import Config, set_config
 from pkms.commands.search import search
 from pkms.commands.defaults import defaults
 from pkms.analytics.stats import stats, person_timeline
+from pkms.commands.viz import viz
 
 
 @click.group()
@@ -29,14 +30,7 @@ def cli(vault, photos):
 cli.add_command(search)
 cli.add_command(stats)
 cli.add_command(defaults)
-
-# Add viz group for visualizations
-@cli.group()
-def viz():
-    """Visualize vault data."""
-    pass
-
-viz.add_command(person_timeline, name='person')
+cli.add_command(viz)
 
 
 @cli.group()
