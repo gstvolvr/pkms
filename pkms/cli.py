@@ -8,6 +8,21 @@ from pkms.commands.search import search
 from pkms.commands.defaults import defaults
 from pkms.analytics.stats import stats, person_timeline
 from pkms.commands.viz import viz
+from pkms.commands.year_tag import year_tag
+from pkms.commands.combine import combine
+from pkms.commands.generate_date_files import generate_dates as generate_dates_cmd
+from pkms.commands.get_photos import export as export_cmd
+from pkms.commands.google_maps import maps
+from pkms.commands.takeout import takeout_cleanup
+from pkms.commands.takeout_photos_conversion import takeout_convert
+from pkms.commands.location import location
+from pkms.commands.llm import llm
+from pkms.commands.rag import rag
+from pkms.commands.process_metadata import process as process_metadata_cmd
+from pkms.commands.wipe_bad_metadata import wipe as wipe_cmd
+from pkms.commands.rename_pensive_files import rename as rename_cmd
+from pkms.commands.scan_for_people import scan_people
+from pkms.commands.scan_for_wikipedia_urls import scan_wikipedia
 
 
 @click.group()
@@ -31,6 +46,12 @@ cli.add_command(search)
 cli.add_command(stats)
 cli.add_command(defaults)
 cli.add_command(viz)
+cli.add_command(year_tag)
+cli.add_command(combine)
+cli.add_command(maps)
+cli.add_command(location)
+cli.add_command(llm)
+cli.add_command(rag)
 
 
 @cli.group()
@@ -95,14 +116,16 @@ def metadata_count():
 @click.option('--auto', '-a', is_flag=True, help='Auto-apply standardization')
 def metadata_review(interactive, auto):
     """Review and standardize metadata."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from review_metadata import run_interactive, run_auto
+    from pkms.commands.review_metadata import run_interactive, run_auto
 
     if interactive:
         run_interactive()
     else:
         run_auto()
+
+
+metadata.add_command(process_metadata_cmd)
+metadata.add_command(wipe_cmd)
 
 
 @metadata.command('outliers')
@@ -111,9 +134,7 @@ def metadata_review(interactive, auto):
 @click.option('--min-appearances', default=10, help='Minimum appearances threshold')
 def metadata_outliers(interactive, count, min_appearances):
     """Find and review outlier people in notes."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from review_metadata import review_outliers_interactive, _count_remaining_outliers, find_outlier_people
+    from pkms.commands.review_metadata import review_outliers_interactive, _count_remaining_outliers, find_outlier_people
 
     if count:
         remaining = _count_remaining_outliers(min_appearances=min_appearances)
@@ -134,20 +155,20 @@ def links():
 @click.option('--interactive', '-i', is_flag=True, default=True, help='Interactive mode')
 def links_add(interactive):
     """Add entity links interactively."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from add_links import main
+    from pkms.commands.add_links import main
 
     if interactive:
         main()
 
 
+links.add_command(scan_people)
+links.add_command(scan_wikipedia)
+
+
 @links.command('count')
 def links_count():
     """Count pending link candidates."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from add_links import count_candidate_links
+    from pkms.commands.add_links import count_candidate_links
 
     remaining = count_candidate_links()
     click.echo(f"Pending link candidates: {remaining}")
@@ -159,24 +180,28 @@ def photos():
     pass
 
 
+photos.add_command(export_cmd)
+photos.add_command(takeout_cleanup)
+photos.add_command(takeout_convert)
+
+
 @photos.command('add')
 @click.option('--max-photos', default=4, help='Maximum photos per note')
 def photos_add(max_photos):
     """Add photo grids to notes."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from add_photos import main
+    from pkms.commands.add_photos import main
 
     main()
+
+
+
 
 
 @photos.command('sync')
 @click.option('--create-notes', is_flag=True, help='Create notes based on photos')
 def photos_sync(create_notes):
     """Sync photo metadata to notes."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from add_metadata import load_photo_metadata_into_md_frontmatter, create_notes_based_on_photos
+    from pkms.commands.add_metadata import load_photo_metadata_into_md_frontmatter, create_notes_based_on_photos
 
     if create_notes:
         click.echo("Creating notes from photo metadata...")
@@ -193,25 +218,20 @@ def files():
     pass
 
 
-@files.command('generate-dates')
+files.add_command(generate_dates_cmd)
+files.add_command(rename_cmd)
+
+
+@files.command('generate-dates-from-photos')
 def generate_dates():
     """Generate date files from photos."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from add_metadata import create_notes_based_on_photos
+    from pkms.commands.add_metadata import create_notes_based_on_photos
 
     create_notes_based_on_photos()
     click.echo("✓ Date files generated")
 
 
-@files.command('cleanup')
-def cleanup():
-    """Remove empty date files."""
-    import sys
-    sys.path.insert(0, '/Users/Home/src/gstvolvr/pkms/bin')
-    from remove_empty_date_files import main
 
-    main()
 
 
 if __name__ == '__main__':

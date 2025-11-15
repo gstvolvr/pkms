@@ -17,9 +17,9 @@ def load_frontmatter_and_body(path: str) -> Tuple[Optional[Dict[str, Any]], str]
         return None, content
 
     parts = content.split('---', 2)
-    # if len(parts) < 3:
-    #     # Malformed; treat as no frontmatter
-    #     return None, content
+    if len(parts) < 3:
+        # Malformed; treat as no frontmatter
+        return None, content
 
     _start, fm_text, body = parts
     try:
