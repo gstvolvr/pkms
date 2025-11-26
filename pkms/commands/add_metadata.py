@@ -5,7 +5,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 import glob
 import time
-import util
+from pkms import util
 import re
 import json
 

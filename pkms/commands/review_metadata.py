@@ -5,7 +5,7 @@ import glob
 import datetime
 from typing import Dict, Tuple, List, Optional
 
-import util
+from pkms import util
 
 # ------------------------------------------------------------
 # Helpers to work with people links and note titles

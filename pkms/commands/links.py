@@ -5,7 +5,7 @@ from typing import List, Tuple
 import pytest
 import yaml
 import json
-import util
+from pkms import util
 
 
 def get_aliases_from_file(file_path):

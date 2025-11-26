@@ -1,7 +1,7 @@
 from typing import List
 import glob
 import os
-import util
+from pkms import util
 import random
 
 """

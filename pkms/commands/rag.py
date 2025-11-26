@@ -158,8 +158,7 @@ def query(query, model, system):
 
     context = "Here is relevant information from my knowledge base:\n\n"
     for i, chunk in enumerate(relevant_chunks):
-        context += f"--- Document {i+1}: {chunk['file_path']} ---
-"
+        context += f"--- Document {i+1}: {chunk['file_path']} ---\n"
         context += chunk["content"]
         context += "\n\n"
 
