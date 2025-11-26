@@ -14,7 +14,6 @@ from pkms.commands.generate_date_files import generate_dates as generate_dates_c
 from pkms.commands.get_photos import export as export_cmd
 from pkms.commands.google_maps import maps
 from pkms.commands.takeout import takeout_cleanup
-from pkms.commands.takeout_photos_conversion import takeout_convert
 from pkms.commands.location import location
 from pkms.commands.llm import llm
 from pkms.commands.rag import rag
@@ -182,7 +181,6 @@ def photos():
 
 photos.add_command(export_cmd)
 photos.add_command(takeout_cleanup)
-photos.add_command(takeout_convert)
 
 
 @photos.command('add')

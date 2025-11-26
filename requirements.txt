@@ -1,3 +1,4 @@
+click
 python-frontmatter
 osxphotos
 geopy
@@ -6,3 +7,7 @@ numpy
 tqdm
 PyYAML
 googlemaps
+markdownify
+pillow
+transformers
+pytest
